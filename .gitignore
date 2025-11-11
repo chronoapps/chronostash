@@ -1,0 +1,83 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+testbin/
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+cover.out
+
+# Kubernetes Generated files - skip generated files, except for vendored files
+!vendor/**/zz_generated.*
+
+# editor and IDE paraphernalia
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Temporary files
+tmp/
+temp/
+
+# Build artifacts
+dist/
+_output/
+
+# Local development
+.env
+.env.local
+*.local
+
+# Kubebuilder
+/config/crd/bases/*.yaml
+
+# Tooling
+/bin/controller-gen*
+/bin/kustomize*
+/bin/setup-envtest*
+/bin/golangci-lint*
+
+# Git worktrees
+.worktrees/
+
+# Node.js / TypeScript
+node_modules/
+.pnpm-store/
+*.tsbuildinfo
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs (Node.js)
+build/
+
+# Logs
+logs/
+*.log
+
+# Testing
+coverage/
+
+# Prisma
+apps/backend/prisma/migrations/dev.db
+apps/backend/prisma/migrations/dev.db-journal
+
+# SQLite database files
+apps/backend/data/*.db
+apps/backend/data/*.db-shm
+apps/backend/data/*.db-wal
+apps/backend/data/*.db-journal
+CLAUDE.md
