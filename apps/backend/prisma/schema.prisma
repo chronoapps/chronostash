@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Database {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  engine   String // POSTGRESQL, MYSQL, MONGODB
+  host     String
+  port     Int
+  username String
+  password String
+  database String?
+  sslMode  String? // DISABLE, REQUIRE, PREFER, VERIFY_CA, VERIFY_FULL
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  backups   Backup[]
+  schedules Schedule[]
+
+  @@index([engine])
+}
+
+model StorageTarget {
+  id            String  @id @default(cuid())
+  name          String  @unique
+  type          String // S3, GOOGLE_DRIVE, CLOUDFLARE_R2
+  config        String // JSON string
+  encryptionKey String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  backups   Backup[]
+  schedules Schedule[]
+
+  @@index([type])
+}
+
+model Backup {
+  id         String        @id @default(cuid())
+  databaseId String
+  database   Database      @relation(fields: [databaseId], references: [id], onDelete: Cascade)
+  storageId  String
+  storage    StorageTarget @relation(fields: [storageId], references: [id], onDelete: Restrict)
+
+  status      String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, FAILED, CANCELLED
+  progress    Int       @default(0)
+  startedAt   DateTime?
+  completedAt DateTime?
+  duration    Int?
+  size        BigInt?
+
+  storagePath String?
+  manifest    String? // JSON string
+  error       String?
+
+  scheduleId String?
+  schedule   Schedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  restores Restore[]
+
+  @@index([databaseId, status])
+  @@index([scheduleId])
+  @@index([createdAt])
+}
+
+model Schedule {
+  id      String  @id @default(cuid())
+  name    String
+  enabled Boolean @default(true)
+
+  databaseId String
+  database   Database      @relation(fields: [databaseId], references: [id], onDelete: Cascade)
+  storageId  String
+  storage    StorageTarget @relation(fields: [storageId], references: [id], onDelete: Restrict)
+
+  cronExpression String
+  timezone       String @default("UTC")
+
+  retentionDays  Int?
+  retentionCount Int?
+
+  lastRunAt DateTime?
+  nextRunAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  backups Backup[]
+
+  @@index([enabled, nextRunAt])
+  @@index([databaseId])
+}
+
+model Restore {
+  id       String @id @default(cuid())
+  backupId String
+  backup   Backup @relation(fields: [backupId], references: [id], onDelete: Cascade)
+
+  targetHost     String?
+  targetPort     Int?
+  targetDb       String?
+  targetUsername String?
+  targetPassword String?
+  dropExisting   Boolean? @default(true)
+
+  status      String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, FAILED
+  progress    Int       @default(0)
+  startedAt   DateTime?
+  completedAt DateTime?
+  duration    Int?
+  error       String?
+
+  createdAt DateTime @default(now())
+
+  @@index([backupId, status])
+  @@index([createdAt])
+}
+
+model Settings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String // JSON string
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}
+
+model User {
+  id       String  @id @default(cuid())
+  username String  @unique
+  email    String? @unique
+  password String
+  role     String  @default("admin")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([username])
+}
